@@ -79,19 +79,19 @@ def payment(request):
         shipping_method='C', product_profile='None'
     )
 
-    currnet_user = request.user
-    mypayment.set_customer_info(name=currnet_user.profile.full_name, 
-        email=currnet_user.email, 
-        address1=currnet_user.profile.address_1, 
-        address2=currnet_user.profile.address_1,
-        city=currnet_user.profile.city, 
-        postcode=currnet_user.profile.zipcode, 
-        country=currnet_user.profile.country, 
-        phone=currnet_user.profile.phone
+    user = request.user
+    mypayment.set_customer_info(name=user.profile.full_name, 
+        email=user.email, 
+        address1=user.profile.address_1, 
+        address2=user.profile.address_1,
+        city=user.profile.city, 
+        postcode=user.profile.zipcode, 
+        country=user.profile.country, 
+        phone=user.profile.phone
     )
 
     mypayment.set_shipping_info(
-        shipping_to= currnet_user.profile.full_name , 
+        shipping_to= user.profile.full_name , 
         address= saved_address.address, 
         city= saved_address.city, 
         postcode=saved_address.zipcode, 
