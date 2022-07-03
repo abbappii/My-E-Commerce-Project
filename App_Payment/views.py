@@ -1,13 +1,14 @@
-# from django.shortcuts import render, HttpResponseRedirect, redirect
+
+from django.shortcuts import render, HttpResponseRedirect, redirect
 # from django.urls import reverse
 
 # # models and forms
-# from App_Order.models import Order, Cart
-# from App_Payment.forms import BillingAddress, BillingForm
+from App_Order.models import Order, Cart
+from App_Payment.forms import BillingAddress, BillingForm
 
-# from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required
 
-# from django.contrib import messages
+from django.contrib import messages
 
 # import requests
 # from sslcommerz_python.payment import SSLCSession
@@ -18,25 +19,25 @@
 # # Create your views here.
 
 
-# @login_required
-# def checkout(request):
-#     saved_address = BillingAddress.objects.get_or_create(user=request.user)
-#     saved_address = saved_address[0]
-#     form = BillingForm(instance=saved_address)
-#     if request.method == 'POST':
-#         form = BillingForm(data=request.POST, instance=saved_address)
-#         if form.is_valid():
-#             form.save()
-#             form = BillingForm(instance=saved_address)
-#             messages.success(request, "Shipping address saved!!")
+@login_required
+def checkout(request):
+    saved_address = BillingAddress.objects.get_or_create(user=request.user)
+    saved_address = saved_address[0]
+    form = BillingForm(instance=saved_address)
+    if request.method == 'POST':
+        form = BillingForm(data=request.POST, instance=saved_address)
+        if form.is_valid():
+            form.save()
+            form = BillingForm(instance=saved_address)
+            messages.success(request, "Shipping address saved!!")
 
-#     order_qs = Order.objects.filter(user=request.user, ordered=False)
-#     # orderitems er sob gulo object ke call kora
-#     order_items = order_qs[0].orderitems.all()
-#     # get_totals ke call kora , order_qs er object
-#     order_total = order_qs[0].get_totals()
+    order_qs = Order.objects.filter(user=request.user, ordered=False)
+    # orderitems er sob gulo object ke call kora
+    order_items = order_qs[0].orderitems.all()
+    # get_totals ke call kora , order_qs er object
+    order_total = order_qs[0].get_totals()
 
-#     return render(request, 'App_Payment/checkout.html', context={'form': form, 'order_items': order_items, 'order_total': order_total, 'saved_address': saved_address})
+    return render(request, 'App_Payment/checkout.html', context={'form': form, 'order_items': order_items, 'order_total': order_total, 'saved_address': saved_address})
 
 
 # @login_required
@@ -130,3 +131,5 @@
 #         messages.warning(request,"You do not have an active order")
 #         return redirect('App_Shop:home')
 #     return render(request,"App_Payment/order.html",context)
+
+
