@@ -1,6 +1,6 @@
 
 from django.shortcuts import render, HttpResponseRedirect, redirect
-# from django.urls import reverse
+from django.urls import reverse
 
 # # models and forms
 from App_Order.models import Order, Cart
@@ -38,7 +38,70 @@ def checkout(request):
     order_total = order_qs[0].get_totals()
 
     return render(request, 'App_Payment/checkout.html', context={'form': form, 'order_items': order_items, 'order_total': order_total, 'saved_address': saved_address})
- 
+
+import requests
+from sslcommerz_python.payment import SSLCSession
+from decimal import Decimal
+import socket
+# from django.conf import settings
+from My_Ecommerce_Project import settings
+
+
+@login_required
+def payment(request):
+    saved_address = BillingAddress.objects.get_or_create(user=request.user)
+    saved_address = saved_address[0]
+    if not saved_address.is_fully_filled():
+        messages.info(request, 'Please complete shipping address.')
+        return redirect('App_Payment:checkout')
+
+    if not request.user.profile.is_fully_filled():
+        messages.info(request,'Please complete your profile details')
+        return redirect('App_Login:profile')
+
+    mypayment = SSLCSession(sslc_is_sandbox=True,
+        sslc_store_id=settings.store_id,
+        sslc_store_pass=settings.Api_key
+    )
+
+    status_url = request.build_absolute_uri(reverse('App_Payment:complete'))
+    mypayment.set_urls(success_url=status_url, fail_url=status_url,
+                       cancel_url=status_url, ipn_url=status_url)
+
+    order_qs = Order.objects.filter(user=request.user, ordered=False)
+    order_items = order_qs[0].orderitems.all()
+    order_item_count = order_items.order_items.count()
+    total = order_qs[0].get_totals()
+    
+    mypayment.set_product_integration(total_amount=Decimal(total), 
+        currency='BDT', product_category='Mixed', 
+        product_name=order_items, num_of_item=order_item_count, 
+        shipping_method='C', product_profile='None'
+    )
+
+    user = request.user
+    mypayment.set_customer_info(name=user.profile.full_name, 
+        email=user.email, 
+        address1=user.profile.address_1, 
+        address2=user.profile.address_1,
+        city=user.profile.city, 
+        postcode=user.profile.zipcode, 
+        country=user.profile.country, 
+        phone=user.profile.phone
+    )
+
+    mypayment.set_shipping_info(
+        shipping_to= user.profile.full_name , 
+        address= saved_address.address, 
+        city= saved_address.city, 
+        postcode=saved_address.zipcode, 
+        country=saved_address.country
+        )
+    response_data = mypayment.init_payment()
+    return redirect(response_data['GatewayPageURL'])
+
+    
+    
         
 # @login_required
 # def payment(request):
@@ -52,8 +115,8 @@ def checkout(request):
 #         messages.info(request, f"Please complete profile details!")
 #         return redirect("App_Login:profile")
 
-#     store_id = 'abc603cbc56e0f77'
-#     Api_key = 'abc603cbc56e0f77@ssl'
+    # store_id = 'abc603cbc56e0f77'
+    # Api_key = 'abc603cbc56e0f77@ssl'
 
 #     mypayment = SSLCSession(sslc_is_sandbox=True,
 #                             sslc_store_id=store_id, sslc_store_pass=Api_key)
@@ -61,8 +124,8 @@ def checkout(request):
 #     status_url = request.build_absolute_uri(reverse("App_Payment:complete"))
 #     # print(status_url)
 
-#     mypayment.set_urls(success_url=status_url, fail_url=status_url,
-#                        cancel_url=status_url, ipn_url=status_url)
+    # mypayment.set_urls(success_url=status_url, fail_url=status_url,
+    #                    cancel_url=status_url, ipn_url=status_url)
 
 #     order_qs = Order.objects.filter(user=request.user, ordered=False)
 #     order_items = order_qs[0].orderitems.all()
@@ -73,8 +136,8 @@ def checkout(request):
 #                                       product_name=order_items, num_of_item=order_items_count, shipping_method='courier', product_profile='None')
 
 #     currnet_user = request.user
-#     mypayment.set_customer_info(name=currnet_user.profile.full_name, email=currnet_user.email, address1=currnet_user.profile.address_1, address2=currnet_user.profile.address_1,
-#                                 city=currnet_user.profile.city, postcode=currnet_user.profile.zipcode, country=currnet_user.profile.country, phone=currnet_user.profile.phone)
+    # mypayment.set_customer_info(name=currnet_user.profile.full_name, email=currnet_user.email, address1=currnet_user.profile.address_1, address2=currnet_user.profile.address_1,
+    #                             city=currnet_user.profile.city, postcode=currnet_user.profile.zipcode, country=currnet_user.profile.country, phone=currnet_user.profile.phone)
 
 #     mypayment.set_shipping_info(shipping_to=currnet_user.profile.full_name, address=saved_address.address,
 #                                 city=saved_address.city, postcode=saved_address.zipcode, country=saved_address.country)
