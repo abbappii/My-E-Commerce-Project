@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     'App_Shop',
     'App_Order',
     'App_Payment',
+    'requestdata_ex_learn',
 ]
 
 CRISPY_TEMPLATE_TAG = 'bootstrap4'
