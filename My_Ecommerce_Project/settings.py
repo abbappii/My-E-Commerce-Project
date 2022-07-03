@@ -101,6 +101,9 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
+store_id = 'abc603cbc56e0f77'
+Api_key = 'abc603cbc56e0f77@ssl'
+
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
 
