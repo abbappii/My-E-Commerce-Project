@@ -38,8 +38,8 @@ def checkout(request):
     order_total = order_qs[0].get_totals()
 
     return render(request, 'App_Payment/checkout.html', context={'form': form, 'order_items': order_items, 'order_total': order_total, 'saved_address': saved_address})
-
-
+ 
+        
 # @login_required
 # def payment(request):
 #     saved_address = BillingAddress.objects.get_or_create(user=request.user)
