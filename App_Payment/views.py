@@ -15,7 +15,7 @@ from django.contrib import messages
 # from decimal import Decimal
 # import socket
 
-# from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt
 # # Create your views here.
 
 
@@ -147,6 +147,22 @@ def payment(request):
 #     return redirect(response_data['GatewayPageURL'])
 
 
+@csrf_exempt
+def complete(request):
+    if request.method == 'POST' or request.method == 'post':
+        payment_data = request.POST
+        print(payment_data)
+        status = payment_data['status']
+        
+
+        if status == 'VALID':
+            val_id = payment_data['val_id']
+            tran_id = payment_data['tran_id']
+            messages.success(request,f'payment complete successfully')
+        
+        elif status == 'FAILED':
+            messages.warning(request,f"payment failed try again.")
+    return render(request,'App_Payment/complete.html')
 # @csrf_exempt
 # def complete(request):
 #     if request.method == 'POST' or request.method == 'post':
@@ -194,5 +210,4 @@ def payment(request):
 #         messages.warning(request,"You do not have an active order")
 #         return redirect('App_Shop:home')
 #     return render(request,"App_Payment/order.html",context)
-
 
