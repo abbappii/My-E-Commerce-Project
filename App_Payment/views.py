@@ -1,4 +1,5 @@
 
+from django.http import HttpResponse
 from django.shortcuts import render, HttpResponseRedirect, redirect
 from django.urls import reverse
 
@@ -159,6 +160,9 @@ def complete(request):
             val_id = payment_data['val_id']
             tran_id = payment_data['tran_id']
             messages.success(request,f'payment complete successfully')
+
+            return HttpResponseRedirect(reverse('App_Payment:purchase', kwargs={'val_id':val_id,'tran_id':tran_id}))
+
         
         elif status == 'FAILED':
             messages.warning(request,f"payment failed try again.")
@@ -182,6 +186,31 @@ def complete(request):
 
 #     return render(request, 'App_Payment/complete.html', context={})
 
+
+@login_required
+def purchase(request,val_id,tran_id):
+
+    ''''user er order list check kora jegulo ordered false 
+    then tuple ke list kre neoya '''
+
+    order_query = Order.objects.filter(user=request.user, ordered = False)
+    order = order_query[0]
+
+    # then model fields er orderId, paymentId set kore ordered true kre deoya jate order complete hoi 
+    orderId = tran_id
+    paymentId = val_id
+    order.ordered = True
+
+    order.orderId = orderId
+    order.paymentId = paymentId
+    order.save()
+
+    # then cartitems check jegulo purchase false 
+    cartitems = Cart.objects.filter(user=request.user,purchased =False)
+    for item in cartitems:
+        item.purchased=True
+        item.save()
+    return HttpResponseRedirect(reverse('App_Shop: home'))
 
 # @login_required
 # def purchase(request, val_id, tran_id):
